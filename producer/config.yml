@@ -1,0 +1,6 @@
+is_debug: true
+listen:
+  type: none
+  bind_ip: localhost
+  port: 8081
+rabbitmq: 'amqp://guest:guest@localhost:5672'
