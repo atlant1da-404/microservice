@@ -22,7 +22,7 @@ func (h *Handler) Consumer(wg *sync.WaitGroup) {
 	}
 
 	wg.Add(1)
-	go func(messageChan <-chan amqp091.Delivery) {
+	go func(wg *sync.WaitGroup, messageChan <-chan amqp091.Delivery) {
 		defer wg.Done()
 
 		for message := range messageChan {
@@ -37,6 +37,6 @@ func (h *Handler) Consumer(wg *sync.WaitGroup) {
 				log.Printf("acknowledged message")
 			}
 		}
-	}(messageCh)
+	}(wg, messageCh)
 	wg.Wait()
 }

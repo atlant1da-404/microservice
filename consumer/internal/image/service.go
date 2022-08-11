@@ -7,10 +7,13 @@ import (
 )
 
 type service struct {
+	ImageStorage Storage
 }
 
-func NewService() Service {
-	return &service{}
+func NewService(storage Storage) Service {
+	return &service{
+		ImageStorage: storage,
+	}
 }
 
 type Service interface {
@@ -29,6 +32,9 @@ func (s *service) OptimizeImage(data []byte) error {
 		return err
 	}
 
-	resize.Resize(img, model.Id)
-	return nil
+	if err := resize.Resize(img, model.Id); err != nil {
+		return err
+	}
+
+	return s.ImageStorage.Set(model.Id)
 }

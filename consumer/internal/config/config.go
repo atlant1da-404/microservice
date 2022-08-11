@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
-	RabbitMQ string `yaml:"rabbitmq"`
+	RabbitMQ      string `yaml:"rabbitmq"`
+	Redis         string `yaml:"redis"`
+	RedisPassword string `yaml:"redis_password"`
 }
 
 var instance *Config

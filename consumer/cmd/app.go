@@ -3,7 +3,9 @@ package main
 import (
 	"consumer/internal/config"
 	"consumer/internal/image"
+	"consumer/internal/image/cache"
 	"consumer/pkg/rabbitmq"
+	"consumer/pkg/redis"
 	"log"
 	"sync"
 )
@@ -21,7 +23,13 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	imageService := image.NewService()
+	rdb, err := redis.NewRedis(cfg.Redis, cfg.RedisPassword)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	imageStorage := cache.NewStorage(rdb)
+	imageService := image.NewService(imageStorage)
 	imageHandler := image.Handler{Channel: channel, ImageService: imageService}
 	wg.Add(1)
 	go imageHandler.Consumer(wg)

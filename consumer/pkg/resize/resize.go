@@ -9,12 +9,23 @@ import (
 	"os"
 )
 
-func Resize(img image.Image, id int) {
+func Resize(img image.Image, id int) error {
 
+	errCh := make(chan error)
 	x, y, q := calcSize(uint(img.Bounds().Size().X), uint(img.Bounds().Size().Y))
 	for i, _ := range x {
-		go createImg(img, x[i], y[i], id, q[i])
+
+		go createImg(img, x[i], y[i], id, q[i], errCh)
+
+		select {
+		case err := <-errCh:
+			return err
+		default:
+			continue
+		}
 	}
+
+	return nil
 }
 
 func calcSize(x, y uint) (xU []uint, yU []uint, q []int) {
@@ -38,16 +49,18 @@ func calcSize(x, y uint) (xU []uint, yU []uint, q []int) {
 	return
 }
 
-func createImg(img image.Image, x, y uint, id, quality int) {
+func createImg(img image.Image, x, y uint, id, quality int, errCh chan error) {
 
 	photo := resize.Resize(x, y, img, resize.Lanczos3)
 	out, err := os.Create(fmt.Sprintf("%d_%d.jpg", id, quality))
 	if err != nil {
-		log.Fatal(err)
+		errCh <- err
+		log.Println(err.Error())
 	}
 
 	defer out.Close()
 	if err := jpeg.Encode(out, photo, nil); err != nil {
-		log.Fatal(err.Error())
+		errCh <- err
+		log.Println(err.Error())
 	}
 }
