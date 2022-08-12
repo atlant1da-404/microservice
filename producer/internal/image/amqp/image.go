@@ -20,7 +20,7 @@ func NewRabbitMQ(uri string) *rabbitMQ {
 	return &rabbitMQ{rabbitPkg: amqp, channel: channel}
 }
 
-func (mq *rabbitMQ) UploadImage(bData []byte) error {
+func (mq *rabbitMQ) UploadImage(bFile []byte) error {
 
 	queue, err := mq.rabbitPkg.QueueDeclare(mq.channel, "upload")
 	if err != nil {
@@ -30,11 +30,6 @@ func (mq *rabbitMQ) UploadImage(bData []byte) error {
 	return mq.channel.Publish("", queue.Name, false, false, amqp091.Publishing{
 		DeliveryMode: amqp091.Persistent,
 		ContentType:  "application/json",
-		Body:         bData,
+		Body:         bFile,
 	})
-}
-
-func (mq *rabbitMQ) DownloadImage(bData []byte) ([]byte, error) {
-
-	return nil, nil
 }

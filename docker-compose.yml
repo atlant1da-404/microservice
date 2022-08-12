@@ -9,13 +9,11 @@ services:
     volumes:
       - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-  redis:
-    image: "redis:alpine"
-    command: redis-server --requirepass qwerty
+  minio:
+    image: 'bitnami/minio:latest'
     ports:
-      - "6379:6379"
-    volumes:
-      - $PWD/redis-data:/var/lib/redis
-        - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+      - '9000:9000'
+      - '9001:9001'
     environment:
-      - REDIS_REPLICATION_MODE=master
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-root-password

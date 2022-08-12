@@ -1,3 +1,4 @@
 rabbitmq: 'amqp://guest:guest@localhost:5672'
-redis: 'localhost:6379'
-redis_password: 'qwerty'
+minio: 'localhost:9000'
+minio_access_key: 'minio-root-user'
+minio_password: 'minio-root-password'

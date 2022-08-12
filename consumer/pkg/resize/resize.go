@@ -1,67 +1,40 @@
 package resize
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
-	"log"
-	"os"
 )
 
-func Resize(img image.Image, id int) error {
+const stepOptimization = 3
 
-	errCh := make(chan error)
-	x, y, q := calcSize(uint(img.Bounds().Size().X), uint(img.Bounds().Size().Y))
-	for i, _ := range x {
-
-		go createImg(img, x[i], y[i], id, q[i], errCh)
-
-		select {
-		case err := <-errCh:
-			return err
-		default:
-			continue
-		}
-	}
-
-	close(errCh)
-	return nil
+func GetImage(data []byte) (image.Image, error) {
+	return jpeg.Decode(bytes.NewReader(data))
 }
 
-func calcSize(x, y uint) (xU []uint, yU []uint, q []int) {
+func ImageQuality(img image.Image) ([]image.Image, []int) {
 
-	xU = append(xU, x)
-	yU = append(yU, y)
-	q = append(q, 100)
+	photoHeight := uint(img.Bounds().Size().Y)
+	photoWidth := uint(img.Bounds().Size().X)
 
-	xU = append(xU, x-(x/4)) // 75%
-	yU = append(yU, y-(y/4)) // 75%
-	q = append(q, 75)
+	width := []uint{photoWidth, photoWidth - (photoWidth / 4), photoWidth / 2, photoWidth / 4}
+	height := []uint{photoHeight, photoHeight - (photoHeight / 4), photoHeight / 2, photoHeight / 4}
+	quality := []int{100, 75, 50, 25}
 
-	xU = append(xU, x/2) // 50%
-	yU = append(yU, y/2) // 50%
-	q = append(q, 50)
-
-	xU = append(xU, x/4) // 25%
-	yU = append(yU, y/4) // 25%
-	q = append(q, 25)
-
-	return
+	return reSize(img, width, height), quality
 }
 
-func createImg(img image.Image, x, y uint, id, quality int, errCh chan error) {
+func GeneratePictureId(formId string, quality int) string {
+	return fmt.Sprintf("%s_%d.jpeg", formId, quality)
+}
 
-	photo := resize.Resize(x, y, img, resize.Lanczos3)
-	out, err := os.Create(fmt.Sprintf("%d_%d.jpg", id, quality))
-	if err != nil {
-		errCh <- err
-		log.Println(err.Error())
+func reSize(img image.Image, width, height []uint) (pictures []image.Image) {
+
+	for i := 0; i <= stepOptimization; i++ {
+		pictures = append(pictures, resize.Resize(width[i], height[i], img, resize.Lanczos3))
 	}
 
-	defer out.Close()
-	if err := jpeg.Encode(out, photo, nil); err != nil {
-		errCh <- err
-		log.Println(err.Error())
-	}
+	return pictures
 }

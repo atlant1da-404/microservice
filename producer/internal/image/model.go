@@ -1,45 +1,35 @@
 package image
 
 import (
+	"fmt"
+	"io/ioutil"
 	"mime/multipart"
-	"producer/internal/apperror"
+	"strconv"
+	"time"
 )
 
-type UploadDTO struct {
-	Id         int64                 `json:"id"`
-	File       multipart.File        `json:"file"`
-	FileHeader *multipart.FileHeader `json:"file_header"`
-	Base64     string                `json:"base_64"`
+type File struct {
+	ID    string `json:"id"`
+	Size  int64  `json:"size"`
+	Bytes []byte `json:"file"`
 }
 
-func (u UploadDTO) Validate() error {
-	if u.File == nil {
-		return apperror.BadRequestError("image not found")
-	}
-
-	if u.FileHeader == nil {
-		return apperror.BadRequestError("image not found")
-	}
-
-	return nil
+type UploadFileDTO struct {
+	Id     int64          `json:"id"`
+	Size   int64          `json:"size"`
+	Reader multipart.File `json:"reader"`
 }
 
-type DownloadDTO struct {
-	Id      int64  `json:"id"`
-	Quality string `json:"quality"`
-}
+func NewFile(dto UploadFileDTO) (*File, error) {
 
-func (d DownloadDTO) Validate() error {
-	if d.Id == 0 {
-		return apperror.BadRequestError("id not correct")
-	}
-	if d.Quality == "" {
-		return apperror.BadRequestError("quality not correct")
+	bytes, err := ioutil.ReadAll(dto.Reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create file model. err: %w", err)
 	}
 
-	return nil
-}
-
-type DownloadImage struct {
-	Base64 string `json:"base_64"`
+	return &File{
+		ID:    strconv.FormatInt(time.Now().UTC().UnixMilli(), 10),
+		Size:  dto.Size,
+		Bytes: bytes,
+	}, nil
 }

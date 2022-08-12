@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"producer/internal/apperror"
-	"strconv"
+	"producer/pkg/rest"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -20,53 +21,34 @@ type Handler struct {
 
 func (h *Handler) Register(router *httprouter.Router) {
 	router.HandlerFunc(http.MethodPost, imageUploadURL, apperror.Middleware(h.UploadImage))
-	router.HandlerFunc(http.MethodGet, imageDownloadURL, apperror.Middleware(h.DownloadImage))
 }
 
 func (h *Handler) UploadImage(w http.ResponseWriter, r *http.Request) error {
 
-	file, fileHeader, err := r.FormFile("image")
-	if err != nil {
-		return apperror.BadRequestError(err.Error())
-	}
-	defer file.Close()
-
-	id, err := h.ImageService.UploadImage(UploadDTO{FileHeader: fileHeader, File: file})
+	w.Header().Set("Content-Type", "form/json")
+	file, err := rest.GetFile(r, "image")
 	if err != nil {
 		return apperror.BadRequestError(err.Error())
 	}
 
-	return json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "ok!",
-		"id":      id,
-	})
-}
-
-func (h *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) error {
-
-	params := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
-
-	imageId, err := strconv.Atoi(params.ByName("id"))
+	fileReader, err := file.Open()
 	if err != nil {
 		return apperror.BadRequestError(err.Error())
 	}
+	defer fileReader.Close()
 
-	quality := r.URL.Query().Get("quality")
-	img, err := h.ImageService.DownloadImage(DownloadDTO{Id: int64(imageId), Quality: quality})
-	if err != nil {
-		return apperror.BadRequestError(err.Error())
+	dto := UploadFileDTO{
+		Id:     time.Now().UnixMilli(),
+		Size:   file.Size,
+		Reader: fileReader,
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/octet-stream")
-	_, err = w.Write([]byte(img.Base64))
-	if err != nil {
-		return apperror.BadRequestError(err.Error())
+	if err := h.ImageService.UploadImage(dto); err != nil {
+		return err
 	}
 
 	return json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "ok!",
-		"id":      imageId,
-		"quality": quality,
+		"id":      dto.Id,
 	})
 }

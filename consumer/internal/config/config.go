@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	RabbitMQ      string `yaml:"rabbitmq"`
-	Redis         string `yaml:"redis"`
-	RedisPassword string `yaml:"redis_password"`
+	RabbitMQ       string `yaml:"rabbitmq"`
+	Minio          string `yaml:"minio"`
+	MinioAccessKey string `yaml:"minio_access_key"`
+	MinioPassword  string `yaml:"minio_password"`
 }
 
 var instance *Config

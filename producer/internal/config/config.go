@@ -7,15 +7,11 @@ import (
 )
 
 type Config struct {
-	IsDebug *bool `yaml:"is_debug"`
-	Listen  struct {
-		Type   string `yaml:"type" env-default:"port"`
+	Listen struct {
 		BindIP string `yaml:"bind_ip" env-default:"localhost"`
 		Port   string `yaml:"port" env-default:"8080"`
 	}
-	RabbitMQ      string `yaml:"rabbitmq"`
-	Redis         string `yaml:"redis"`
-	RedisPassword string `yaml:"redis_password"`
+	RabbitMQ string `yaml:"rabbitmq"`
 }
 
 var instance *Config

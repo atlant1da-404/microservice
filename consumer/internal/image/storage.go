@@ -1,5 +1,7 @@
 package image
 
+import "io"
+
 type Storage interface {
-	Set(modelId int) error
+	UploadImage(fileId string, fileSize int64, reader io.Reader) error
 }

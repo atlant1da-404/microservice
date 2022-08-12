@@ -1,86 +1,54 @@
 package image
 
 import (
-	"consumer/pkg/convert"
+	"bytes"
 	"consumer/pkg/resize"
 	"encoding/json"
-	"fmt"
-	"github.com/rabbitmq/amqp091-go"
-	"os"
+	"image/jpeg"
 )
 
 type service struct {
-	ImageStorage Storage
+	imageStorage Storage
 }
 
-func NewService(storage Storage) Service {
-	return &service{
-		ImageStorage: storage,
-	}
+func NewService(imageStorage Storage) Service {
+	return &service{imageStorage: imageStorage}
 }
 
 type Service interface {
-	OptimizeImage(data []byte) error
-	Base64Enc(data []byte) (*SendDTO, error)
-	SendImage(channel *amqp091.Channel, sendDto *SendDTO) error
+	SaveImage(data []byte) error
 }
 
-func (s *service) OptimizeImage(data []byte) error {
+func (s *service) SaveImage(data []byte) error {
 
-	model := &UploadDTO{}
-	if err := json.Unmarshal(data, &model); err != nil {
+	var file File
+
+	if err := json.Unmarshal(data, &file); err != nil {
 		return err
 	}
 
-	img, err := convert.Base64Dec(model.Base64)
+	img, err := resize.GetImage(file.Bytes)
 	if err != nil {
 		return err
 	}
 
-	if err := resize.Resize(img, model.Id); err != nil {
-		return err
+	pictures, quality := resize.ImageQuality(img)
+
+	for i, picture := range pictures {
+
+		fileID := resize.GeneratePictureId(file.ID, quality[i])
+
+		buf := new(bytes.Buffer)
+		if err := jpeg.Encode(buf, picture, nil); err != nil {
+			return err
+		}
+
+		reader := bytes.NewReader(buf.Bytes())
+		if err := s.imageStorage.UploadImage(fileID, reader.Size(), reader); err != nil {
+			return err
+		}
+
 	}
 
-	return s.ImageStorage.Set(model.Id)
-}
-
-func (s *service) Base64Enc(data []byte) (*SendDTO, error) {
-
-	model := &DownloadDTO{}
-	if err := json.Unmarshal(data, model); err != nil {
-		return nil, err
-	}
-
-	filename := fmt.Sprintf("%d_%s.jpg", model.ID, model.Quality)
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	base64Enc, err := convert.Base64Enc(file)
-	if err != nil {
-		return nil, err
-	}
-
-	return &SendDTO{Id: model.ID, Base64: base64Enc}, nil
-}
-
-func (s *service) SendImage(channel *amqp091.Channel, sendDto *SendDTO) error {
-
-	bData, err := json.Marshal(sendDto)
-	if err != nil {
-		return err
-	}
-
-	queue, err := channel.QueueDeclare("producer", true, false, false, false, nil)
-	if err != nil {
-		return err
-	}
-
-	return channel.Publish("", queue.Name, false, false, amqp091.Publishing{
-		DeliveryMode: amqp091.Persistent,
-		ContentType:  "application/json",
-		Body:         bData,
-	})
+	return err
 }

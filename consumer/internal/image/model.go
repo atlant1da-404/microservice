@@ -1,19 +1,7 @@
 package image
 
-import "mime/multipart"
-
-type UploadDTO struct {
-	Id         int                   `json:"id"`
-	FileHeader *multipart.FileHeader `json:"file_header"`
-	Base64     string                `json:"base_64"`
-}
-
-type DownloadDTO struct {
-	ID      int    `json:"id"`
-	Quality string `json:"quality"`
-}
-
-type SendDTO struct {
-	Id     int    `json:"id"`
-	Base64 string `json:"base_64"`
+type File struct {
+	ID    string `json:"id"`
+	Size  int64  `json:"size"`
+	Bytes []byte `json:"file"`
 }

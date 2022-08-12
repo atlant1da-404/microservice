@@ -9,8 +9,6 @@ import (
 	"producer/internal/config"
 	"producer/internal/image"
 	"producer/internal/image/amqp"
-	"producer/internal/image/cache"
-	"producer/pkg/redis"
 	"time"
 )
 
@@ -20,14 +18,8 @@ func main() {
 	router := httprouter.New()
 	errCh := make(chan error)
 
-	rdb, err := redis.NewRedis(cfg.Redis, cfg.RedisPassword)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
 	amqpStorage := amqp.NewRabbitMQ(cfg.RabbitMQ)
-	cacheStorage := cache.NewStorage(rdb)
-	imageService := image.NewService(amqpStorage, cacheStorage)
+	imageService := image.NewService(amqpStorage)
 	imageHandler := image.Handler{ImageService: imageService}
 	imageHandler.Register(router)
 
