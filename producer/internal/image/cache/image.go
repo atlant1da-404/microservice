@@ -11,9 +11,16 @@ type storage struct {
 }
 
 func NewStorage(rdb *redis.Client) *storage {
+
 	return &storage{rdb: rdb}
 }
 
-func (s *storage) Set(modelId int) error {
-	return s.rdb.Set(context.Background(), strconv.Itoa(modelId), true, -1).Err()
+func (s *storage) CheckInCache(id int64) bool {
+
+	_, err := s.rdb.Get(context.Background(), strconv.Itoa(int(id))).Result()
+	if err != nil {
+		return false
+	}
+
+	return true
 }

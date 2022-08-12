@@ -1,37 +1,40 @@
 package amqp
 
 import (
+	"github.com/rabbitmq/amqp091-go"
 	"log"
 	"producer/pkg/rabbitmq"
-
-	"github.com/rabbitmq/amqp091-go"
 )
 
 type rabbitMQ struct {
 	rabbitPkg *rabbitmq.RabbitMQ
+	channel   *amqp091.Channel
 }
 
 func NewRabbitMQ(uri string) *rabbitMQ {
 	amqp := rabbitmq.New(uri)
-	return &rabbitMQ{rabbitPkg: amqp}
+	channel, err := amqp.Connect()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	return &rabbitMQ{rabbitPkg: amqp, channel: channel}
 }
 
 func (mq *rabbitMQ) UploadImage(bData []byte) error {
 
-	channel, err := mq.rabbitPkg.Connect()
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	defer channel.Close()
-
-	queue, err := mq.rabbitPkg.QueueDeclare(channel)
+	queue, err := mq.rabbitPkg.QueueDeclare(mq.channel, "upload")
 	if err != nil {
 		return err
 	}
 
-	return channel.Publish("", queue.Name, false, false, amqp091.Publishing{
+	return mq.channel.Publish("", queue.Name, false, false, amqp091.Publishing{
 		DeliveryMode: amqp091.Persistent,
 		ContentType:  "application/json",
 		Body:         bData,
 	})
+}
+
+func (mq *rabbitMQ) DownloadImage(bData []byte) ([]byte, error) {
+
+	return nil, nil
 }

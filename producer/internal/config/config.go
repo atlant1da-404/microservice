@@ -13,7 +13,9 @@ type Config struct {
 		BindIP string `yaml:"bind_ip" env-default:"localhost"`
 		Port   string `yaml:"port" env-default:"8080"`
 	}
-	RabbitMQ string `yaml:"rabbitmq"`
+	RabbitMQ      string `yaml:"rabbitmq"`
+	Redis         string `yaml:"redis"`
+	RedisPassword string `yaml:"redis_password"`
 }
 
 var instance *Config

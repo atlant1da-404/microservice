@@ -15,28 +15,30 @@ type Handler struct {
 func (h *Handler) Consumer(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	messageCh, err := rabbitmq.MessageChan(h.Channel)
+	uploadCh, err := rabbitmq.MessageChan(h.Channel, "upload")
 	if err != nil {
 		log.Fatalln(err.Error())
 		return
 	}
 
 	wg.Add(1)
-	go func(wg *sync.WaitGroup, messageChan <-chan amqp091.Delivery) {
+	go func(wg *sync.WaitGroup, uploadCh <-chan amqp091.Delivery) {
 		defer wg.Done()
 
-		for message := range messageChan {
+		for message := range uploadCh {
+
+			log.Print("accept upload image")
 
 			if err := h.ImageService.OptimizeImage(message.Body); err != nil {
 				log.Printf("error photo processing: %s", err.Error())
 			}
 
 			if err := message.Ack(false); err != nil {
-				log.Printf("error acknowledging message : %s", err)
+				log.Printf("error acknowledging message : %s", err.Error())
 			} else {
 				log.Printf("acknowledged message")
 			}
 		}
-	}(wg, messageCh)
+	}(wg, uploadCh)
 	wg.Wait()
 }

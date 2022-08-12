@@ -25,5 +25,21 @@ func (u UploadDTO) Validate() error {
 }
 
 type DownloadDTO struct {
-	Image *multipart.FileHeader
+	Id      int64  `json:"id"`
+	Quality string `json:"quality"`
+}
+
+func (d DownloadDTO) Validate() error {
+	if d.Id == 0 {
+		return apperror.BadRequestError("id not correct")
+	}
+	if d.Quality == "" {
+		return apperror.BadRequestError("quality not correct")
+	}
+
+	return nil
+}
+
+type DownloadImage struct {
+	Base64 string `json:"base_64"`
 }

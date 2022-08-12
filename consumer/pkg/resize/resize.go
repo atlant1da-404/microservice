@@ -25,6 +25,7 @@ func Resize(img image.Image, id int) error {
 		}
 	}
 
+	close(errCh)
 	return nil
 }
 

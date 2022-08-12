@@ -25,9 +25,9 @@ func (mq *RabbitMQ) QueueDeclare(channel *amqp091.Channel) (amqp091.Queue, error
 	return channel.QueueDeclare(mq.uploadQueue, true, false, false, false, nil)
 }
 
-func MessageChan(channel *amqp091.Channel) (<-chan amqp091.Delivery, error) {
+func MessageChan(channel *amqp091.Channel, name string) (<-chan amqp091.Delivery, error) {
 
-	queue, err := channel.QueueDeclare("upload", true, false, false, false, nil)
+	queue, err := channel.QueueDeclare(name, true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
