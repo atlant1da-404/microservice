@@ -76,11 +76,6 @@ func (h *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) error {
 	if _, err := io.Copy(w, bytes.NewReader(img.Bytes)); err != nil {
 		return err
 	}
-	if _, err := w.Write(img.Bytes); err != nil {
-		return err
-	}
-
-	return json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "ok!",
-	})
+	_, err = w.Write(img.Bytes)
+	return err
 }
