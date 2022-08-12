@@ -3,7 +3,7 @@ package main
 import (
 	"consumer/internal/config"
 	"consumer/internal/image"
-	"consumer/internal/image/minio"
+	"consumer/internal/image/storage/minio"
 	"consumer/pkg/rabbitmq"
 	"log"
 	"sync"

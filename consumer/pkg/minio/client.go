@@ -11,12 +11,6 @@ import (
 
 const bucketName = "upload"
 
-type Object struct {
-	ID   string
-	Size int64
-	Tags map[string]string
-}
-
 type Client struct {
 	minioClient *minio.Client
 }
@@ -32,9 +26,7 @@ func NewClient(endpoint, accessKeyID, secretAccessKey string) (*Client, error) {
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}
 
-	return &Client{
-		minioClient: minioClient,
-	}, nil
+	return &Client{minioClient: minioClient}, nil
 }
 
 func (c *Client) UploadImage(fileId string, fileSize int64, reader io.Reader) error {

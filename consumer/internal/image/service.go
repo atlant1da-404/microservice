@@ -47,7 +47,6 @@ func (s *service) SaveImage(data []byte) error {
 		if err := s.imageStorage.UploadImage(fileID, reader.Size(), reader); err != nil {
 			return err
 		}
-
 	}
 
 	return err

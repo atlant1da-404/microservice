@@ -1,11 +1,11 @@
 package image
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"strconv"
-	"time"
 )
 
 type File struct {
@@ -28,8 +28,23 @@ func NewFile(dto UploadFileDTO) (*File, error) {
 	}
 
 	return &File{
-		ID:    strconv.FormatInt(time.Now().UTC().UnixMilli(), 10),
+		ID:    strconv.FormatInt(dto.Id, 10),
 		Size:  dto.Size,
 		Bytes: bytes,
 	}, nil
+}
+
+type DownloadFileDTO struct {
+	ID      string `json:"id"`
+	Quality string `json:"quality"`
+}
+
+func (d *DownloadFileDTO) Validate() error {
+	if d.ID == "" {
+		return errors.New("id not found")
+	}
+	if d.Quality == "" {
+		return errors.New("quality not found")
+	}
+	return nil
 }

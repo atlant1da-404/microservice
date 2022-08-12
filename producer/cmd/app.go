@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"producer/internal/config"
 	"producer/internal/image"
-	"producer/internal/image/amqp"
+	"producer/internal/image/storage/amqp"
+	"producer/internal/image/storage/minio"
 	"time"
 )
 
@@ -18,14 +19,23 @@ func main() {
 	router := httprouter.New()
 	errCh := make(chan error)
 
-	amqpStorage := amqp.NewRabbitMQ(cfg.RabbitMQ)
-	imageService := image.NewService(amqpStorage)
+	amqpStorage, err := amqp.NewRabbitMQ(cfg.RabbitMQ)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	minioStorage, err := minio.NewStorage(cfg.Minio, cfg.MinioAccessKey, cfg.MinioPassword)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	imageService := image.NewService(amqpStorage, minioStorage)
 	imageHandler := image.Handler{ImageService: imageService}
 	imageHandler.Register(router)
 
 	go start(router, cfg, errCh)
 
-	log.Println("Server successfully started!")
+	log.Println("[PRODUCER] successfully started on localhost:8081")
 	log.Fatalln(<-errCh)
 }
 
