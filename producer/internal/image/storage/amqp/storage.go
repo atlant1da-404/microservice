@@ -1,8 +1,10 @@
 package amqp
 
 import (
+	"context"
 	"github.com/rabbitmq/amqp091-go"
 	"producer/pkg/rabbitmq"
+	"time"
 )
 
 type rabbitMQ struct {
@@ -28,7 +30,10 @@ func (mq *rabbitMQ) UploadImage(bFile []byte) error {
 		return err
 	}
 
-	return mq.client.Channel.Publish("", queue.Name, false, false, amqp091.Publishing{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return mq.client.Channel.PublishWithContext(ctx, "", queue.Name, false, false, amqp091.Publishing{
 		DeliveryMode: amqp091.Persistent,
 		ContentType:  "application/json",
 		Body:         bFile,

@@ -43,6 +43,7 @@ func start(router http.Handler, cfg *config.Config, errCh chan error) {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
 	if err != nil {
+		log.Fatalln(err.Error())
 	}
 
 	server := &http.Server{

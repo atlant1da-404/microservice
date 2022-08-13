@@ -7,8 +7,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-const bucketName = "upload"
-
 type Client struct {
 	minioClient *minio.Client
 }
