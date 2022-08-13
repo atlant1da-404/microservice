@@ -24,8 +24,18 @@ func (mq *RabbitMQ) Connect(uri string) (*RabbitMQ, error) {
 	return &RabbitMQ{Channel: channel}, nil
 }
 
+func (mq *RabbitMQ) queueDeclare(channel *amqp091.Channel, queueName string) (amqp091.Queue, error) {
+	return channel.QueueDeclare(queueName, true, false, false, false, nil)
+}
+
 func (mq *RabbitMQ) PublishWithContext(ctx context.Context, queueName string, contentType string, bFile []byte) error {
-	return mq.Channel.PublishWithContext(ctx, "", queueName, false, false, amqp091.Publishing{
+
+	queue, err := mq.queueDeclare(mq.Channel, queueName)
+	if err != nil {
+		return err
+	}
+
+	return mq.Channel.PublishWithContext(ctx, "", queue.Name, false, false, amqp091.Publishing{
 		DeliveryMode: amqp091.Persistent,
 		ContentType:  contentType,
 		Body:         bFile,
