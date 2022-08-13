@@ -1,9 +1,11 @@
 package image
 
+import "context"
+
 type StorageAmqp interface {
-	UploadImage(bFile []byte) error
+	UploadImage(ctx context.Context, bFile []byte) error
 }
 
 type StorageMinio interface {
-	DownloadImage(fileId string) (*File, error)
+	DownloadImage(ctx context.Context, fileId string) (*File, error)
 }

@@ -2,9 +2,9 @@ package image
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
+	"producer/internal/apperror"
 	"strconv"
 )
 
@@ -15,7 +15,7 @@ type File struct {
 }
 
 type UploadFileDTO struct {
-	Id     int64          `json:"id"`
+	Id     int            `json:"id"`
 	Size   int64          `json:"size"`
 	Reader multipart.File `json:"reader"`
 }
@@ -24,11 +24,11 @@ func NewFile(dto UploadFileDTO) (*File, error) {
 
 	bytes, err := ioutil.ReadAll(dto.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create file model. err: %w", err)
+		return nil, apperror.SystemError(err.Error())
 	}
 
 	return &File{
-		ID:    strconv.FormatInt(dto.Id, 10),
+		ID:    strconv.Itoa(dto.Id),
 		Size:  dto.Size,
 		Bytes: bytes,
 	}, nil
@@ -40,6 +40,7 @@ type DownloadFileDTO struct {
 }
 
 func (d *DownloadFileDTO) Validate() error {
+
 	if d.ID == "" {
 		return errors.New("id not found")
 	}

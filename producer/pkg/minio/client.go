@@ -25,11 +25,6 @@ func NewClient(endpoint, accessKeyID, secretAccessKey string) (*Client, error) {
 	return &Client{minioClient: minioClient}, nil
 }
 
-func (c *Client) Download(bucketName, fileId string) (*minio.Object, error) {
-
-	obj, err := c.minioClient.GetObject(context.Background(), bucketName, fileId, minio.GetObjectOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get file with id: %s from minio bucket %s. err: %w", fileId, bucketName, err)
-	}
-	return obj, nil
+func (c *Client) Download(ctx context.Context, bucketName, fileId string) (*minio.Object, error) {
+	return c.minioClient.GetObject(ctx, bucketName, fileId, minio.GetObjectOptions{})
 }

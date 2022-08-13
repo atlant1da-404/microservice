@@ -1,6 +1,7 @@
 package minio
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"producer/internal/image"
@@ -23,23 +24,23 @@ func NewStorage(endpoint, accessKeyID, secretAccessKey string) (image.StorageMin
 	}, nil
 }
 
-func (m *minioStorage) DownloadImage(fileId string) (*image.File, error) {
+func (m *minioStorage) DownloadImage(ctx context.Context, fileId string) (*image.File, error) {
 
-	obj, err := m.client.Download("upload", fileId)
+	obj, err := m.client.Download(ctx, "upload", fileId)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get file. err: %w", err)
+		return nil, err
 	}
 	defer obj.Close()
 
 	objectInfo, err := obj.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get file. err: %w", err)
+		return nil, err
 	}
 
 	buffer := make([]byte, objectInfo.Size)
 	_, err = obj.Read(buffer)
 	if err != nil && err != io.EOF {
-		return nil, fmt.Errorf("failed to get objects. err: %w", err)
+		return nil, err
 	}
 
 	f := image.File{

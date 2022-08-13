@@ -1,11 +1,8 @@
 package image
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"io"
 	"math/rand"
 	"net/http"
 	"producer/internal/apperror"
@@ -41,15 +38,16 @@ func (h *Handler) UploadImage(w http.ResponseWriter, r *http.Request) error {
 	defer fileReader.Close()
 
 	dto := UploadFileDTO{
-		Id:     int64(rand.Int()),
+		Id:     rand.Int(),
 		Size:   file.Size,
 		Reader: fileReader,
 	}
 
-	if err := h.ImageService.UploadImage(dto); err != nil {
+	if err := h.ImageService.UploadImage(r.Context(), dto); err != nil {
 		return err
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	return json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "ok!",
 		"id":      dto.Id,
@@ -65,17 +63,10 @@ func (h *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) error {
 		Quality: r.URL.Query().Get("quality"),
 	}
 
-	img, err := h.ImageService.DownloadImage(dto)
+	img, err := h.ImageService.DownloadImage(r.Context(), dto)
 	if err != nil {
 		return err
 	}
 
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.jpeg", img.ID))
-	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
-
-	if _, err := io.Copy(w, bytes.NewReader(img.Bytes)); err != nil {
-		return err
-	}
-	_, err = w.Write(img.Bytes)
-	return err
+	return rest.SendFile(w, r, img.ID, img.Bytes)
 }

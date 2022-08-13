@@ -1,6 +1,9 @@
 package rabbitmq
 
-import "github.com/rabbitmq/amqp091-go"
+import (
+	"context"
+	"github.com/rabbitmq/amqp091-go"
+)
 
 type RabbitMQ struct {
 	Channel *amqp091.Channel
@@ -21,6 +24,10 @@ func (mq *RabbitMQ) Connect(uri string) (*RabbitMQ, error) {
 	return &RabbitMQ{Channel: channel}, nil
 }
 
-func (mq *RabbitMQ) QueueDeclare(name string) (amqp091.Queue, error) {
-	return mq.Channel.QueueDeclare(name, true, false, false, false, nil)
+func (mq *RabbitMQ) PublishWithContext(ctx context.Context, queueName string, contentType string, bFile []byte) error {
+	return mq.Channel.PublishWithContext(ctx, "", queueName, false, false, amqp091.Publishing{
+		DeliveryMode: amqp091.Persistent,
+		ContentType:  contentType,
+		Body:         bFile,
+	})
 }

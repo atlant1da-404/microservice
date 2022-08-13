@@ -2,7 +2,6 @@ package amqp
 
 import (
 	"context"
-	"github.com/rabbitmq/amqp091-go"
 	"producer/pkg/rabbitmq"
 	"time"
 )
@@ -23,19 +22,10 @@ func NewRabbitMQ(uri string) (*rabbitMQ, error) {
 	return &rabbitMQ{client: client}, nil
 }
 
-func (mq *rabbitMQ) UploadImage(bFile []byte) error {
+func (mq *rabbitMQ) UploadImage(ctx context.Context, bFile []byte) error {
 
-	queue, err := mq.client.QueueDeclare("upload")
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	return mq.client.Channel.PublishWithContext(ctx, "", queue.Name, false, false, amqp091.Publishing{
-		DeliveryMode: amqp091.Persistent,
-		ContentType:  "application/json",
-		Body:         bFile,
-	})
+	return mq.client.PublishWithContext(ctx, "upload", "application/json", bFile)
 }

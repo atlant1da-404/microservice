@@ -1,8 +1,10 @@
 package image
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"producer/internal/apperror"
 )
 
 type service struct {
@@ -15,30 +17,30 @@ func NewService(storageAmqp StorageAmqp, storageMinio StorageMinio) Service {
 }
 
 type Service interface {
-	UploadImage(dto UploadFileDTO) error
-	DownloadImage(dto DownloadFileDTO) (*File, error)
+	UploadImage(ctx context.Context, dto UploadFileDTO) error
+	DownloadImage(ctx context.Context, dto DownloadFileDTO) (*File, error)
 }
 
-func (s *service) UploadImage(dto UploadFileDTO) error {
+func (s *service) UploadImage(ctx context.Context, dto UploadFileDTO) error {
 
 	img, err := NewFile(dto)
 	if err != nil {
-		return err
+		return apperror.BadRequestError(err.Error())
 	}
 
 	bFile, err := json.Marshal(img)
 	if err != nil {
-		return err
+		return apperror.BadRequestError(err.Error())
 	}
 
-	return s.StorageAmqp.UploadImage(bFile)
+	return s.StorageAmqp.UploadImage(ctx, bFile)
 }
 
-func (s *service) DownloadImage(dto DownloadFileDTO) (*File, error) {
+func (s *service) DownloadImage(ctx context.Context, dto DownloadFileDTO) (*File, error) {
 
 	if err := dto.Validate(); err != nil {
-		return nil, err
+		return nil, apperror.BadRequestError(err.Error())
 	}
 
-	return s.StorageMinio.DownloadImage(fmt.Sprintf("%s_%s.jpeg", dto.ID, dto.Quality))
+	return s.StorageMinio.DownloadImage(ctx, fmt.Sprintf("%s_%s.jpeg", dto.ID, dto.Quality))
 }
