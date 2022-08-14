@@ -15,7 +15,7 @@ import (
 
 func main() {
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig("prod") // change ´prod´ to ´dev´ to run local and use custom env
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -40,7 +40,7 @@ func main() {
 
 func start(router http.Handler, cfg *config.Config) {
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.BindIP, cfg.Port))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -51,7 +51,7 @@ func start(router http.Handler, cfg *config.Config) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Printf("[PRODUCER]: started on %s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
+	log.Printf("[PRODUCER]: started on %s:%s", cfg.BindIP, cfg.Port)
 
 	if err := server.Serve(listener); err != nil {
 		log.Fatalln(err.Error())

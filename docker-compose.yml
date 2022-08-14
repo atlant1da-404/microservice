@@ -17,3 +17,32 @@ services:
     environment:
       - MINIO_ROOT_USER=minio-root-user
       - MINIO_ROOT_PASSWORD=minio-root-password
+      - MINIO_STORAGE_USE_HTTPS=False
+  producer:
+    build: ./producer
+    container_name: microservice_producer
+    restart: always
+    environment:
+      - PRODUCER_HOST=0.0.0.0
+      - PRODUCER_PORT=8081
+      - RabbitMQ=amqp://guest:guest@host.docker.internal:5672
+      - MINIO=minio:9000
+      - MINIO_ACCESS_KEY=minio-root-user
+      - MINIO_PASSWORD=minio-root-password
+    ports:
+      - 8080:8081
+    depends_on:
+      - rabbitmq
+      - minio
+  consumer:
+    build: ./consumer
+    container_name: microservice_consumer
+    restart: always
+    environment:
+      - RabbitMQ=amqp://guest:guest@host.docker.internal:5672
+      - MINIO=minio:9000
+      - MINIO_ACCESS_KEY=minio-root-user
+      - MINIO_PASSWORD=minio-root-password
+    depends_on:
+      - rabbitmq
+      - minio

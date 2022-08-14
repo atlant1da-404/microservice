@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/ilyakaznacheev/cleanenv"
+	"os"
 )
 
 type Config struct {
@@ -11,7 +12,18 @@ type Config struct {
 	MinioPassword  string `yaml:"minio_password"`
 }
 
-func GetConfig() (*Config, error) {
+func GetConfig(environment string) (*Config, error) {
+
+	if environment == "prod" {
+
+		return &Config{
+			RabbitMQ:       os.Getenv("RabbitMQ"),
+			Minio:          os.Getenv("MINIO"),
+			MinioAccessKey: os.Getenv("MINIO_ACCESS_KEY"),
+			MinioPassword:  os.Getenv("MINIO_PASSWORD"),
+		}, nil
+
+	}
 
 	instance := &Config{}
 	if err := cleanenv.ReadConfig("config.yml", instance); err != nil {

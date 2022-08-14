@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig("prod") // change ´prod´ to ´dev´ to run local and use custom env
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
