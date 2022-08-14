@@ -6,13 +6,14 @@ import (
 	"consumer/internal/image/storage/minio"
 	"consumer/pkg/rabbitmq"
 	"log"
-	"sync"
 )
 
 func main() {
 
-	cfg := config.GetConfig()
-	wg := &sync.WaitGroup{}
+	cfg, err := config.GetConfig()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
 	rabbitMq := rabbitmq.New(cfg.RabbitMQ)
 	channel, err := rabbitMq.Connect()
@@ -28,9 +29,5 @@ func main() {
 
 	imageService := image.NewService(imageStorage)
 	imageHandler := image.Handler{Channel: channel, ImageService: imageService}
-
-	wg.Add(1)
-	go imageHandler.Consumer(wg)
-	log.Println("[CONSUMER]: successfully started!")
-	wg.Wait()
+	imageHandler.Consumer()
 }

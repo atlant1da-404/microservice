@@ -12,8 +12,7 @@ type Handler struct {
 	ImageService Service
 }
 
-func (h *Handler) Consumer(wg *sync.WaitGroup) {
-	defer wg.Done()
+func (h *Handler) Consumer() {
 
 	messageCh, err := rabbitmq.MessageChan(h.Channel, "upload")
 	if err != nil {
@@ -21,6 +20,7 @@ func (h *Handler) Consumer(wg *sync.WaitGroup) {
 		return
 	}
 
+	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func(wg *sync.WaitGroup, messageCh <-chan amqp091.Delivery) {
 		defer wg.Done()
@@ -40,5 +40,8 @@ func (h *Handler) Consumer(wg *sync.WaitGroup) {
 			}
 		}
 	}(wg, messageCh)
+	log.Print("[CONSUMER]: started!")
 	wg.Wait()
+
+	log.Print("[CONSUMER]: queue is closed, consumer closed!")
 }

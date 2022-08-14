@@ -19,9 +19,7 @@ func NewStorage(endpoint, accessKeyID, secretAccessKey string) (image.StorageMin
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}
 
-	return &minioStorage{
-		client: client,
-	}, nil
+	return &minioStorage{client: client}, nil
 }
 
 func (m *minioStorage) DownloadImage(ctx context.Context, fileId string) (*image.File, error) {
@@ -43,11 +41,5 @@ func (m *minioStorage) DownloadImage(ctx context.Context, fileId string) (*image
 		return nil, err
 	}
 
-	f := image.File{
-		ID:    objectInfo.Key,
-		Size:  objectInfo.Size,
-		Bytes: buffer,
-	}
-
-	return &f, nil
+	return &image.File{ID: objectInfo.Key, Size: objectInfo.Size, Bytes: buffer}, nil
 }

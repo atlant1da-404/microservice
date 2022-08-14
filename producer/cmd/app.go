@@ -15,9 +15,10 @@ import (
 
 func main() {
 
-	cfg := config.GetConfig()
-	router := httprouter.New()
-	errCh := make(chan error)
+	cfg, err := config.GetConfig()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
 	amqpStorage, err := amqp.NewRabbitMQ(cfg.RabbitMQ)
 	if err != nil {
@@ -29,17 +30,15 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
+	router := httprouter.New()
 	imageService := image.NewService(amqpStorage, minioStorage)
 	imageHandler := image.Handler{ImageService: imageService}
 	imageHandler.Register(router)
 
-	go start(router, cfg, errCh)
-
-	log.Println("[PRODUCER] successfully started on localhost:8081")
-	log.Fatalln(<-errCh)
+	start(router, cfg)
 }
 
-func start(router http.Handler, cfg *config.Config, errCh chan error) {
+func start(router http.Handler, cfg *config.Config) {
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
 	if err != nil {
@@ -52,5 +51,9 @@ func start(router http.Handler, cfg *config.Config, errCh chan error) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	errCh <- server.Serve(listener)
+	log.Printf("[PRODUCER]: started on %s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
+
+	if err := server.Serve(listener); err != nil {
+		log.Fatalln(err.Error())
+	}
 }

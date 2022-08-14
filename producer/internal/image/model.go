@@ -44,8 +44,12 @@ func (d *DownloadFileDTO) Validate() error {
 	if d.ID == "" {
 		return errors.New("id not found")
 	}
-	if d.Quality == "" {
-		return errors.New("quality not found")
+
+	for _, quality := range []string{"25", "50", "75", "100"} {
+		if d.Quality == quality {
+			return nil
+		}
 	}
-	return nil
+
+	return errors.New("quality not correct")
 }

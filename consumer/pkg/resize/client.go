@@ -6,12 +6,24 @@ import (
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
+	"image/png"
 )
 
 const stepOptimization = 3
 
 func GetImage(data []byte) (image.Image, error) {
-	return jpeg.Decode(bytes.NewReader(data))
+
+	img, err := jpeg.Decode(bytes.NewReader(data))
+	if err == nil {
+		return img, nil
+	}
+
+	img, err = png.Decode(bytes.NewReader(data))
+	if err == nil {
+		return img, nil
+	}
+
+	return nil, err
 }
 
 func ImageQuality(img image.Image) ([]image.Image, []int) {

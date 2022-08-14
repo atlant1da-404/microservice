@@ -18,9 +18,7 @@ func NewStorage(endpoint, accessKeyID, secretAccessKey string) (image.Storage, e
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}
 
-	return &minioStorage{
-		client: client,
-	}, nil
+	return &minioStorage{client: client}, nil
 }
 
 func (m *minioStorage) UploadImage(fileId string, fileSize int64, reader io.Reader) error {
