@@ -1,6 +1,0 @@
-bind_ip: localhost
-port: 8080
-rabbitmq: 'amqp://guest:guest@localhost:5672'
-minio: 'localhost:9000'
-minio_access_key: 'minio-root-user'
-minio_password: 'minio-root-password'
