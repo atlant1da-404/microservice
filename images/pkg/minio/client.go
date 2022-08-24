@@ -6,7 +6,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-type minioPkg struct {
+type Storage struct {
 	minioClient *minio.Client
 }
 
@@ -20,5 +20,5 @@ func NewMinio(endpoint, accessKeyID, secretAccessKey string) (Minio, error) {
 		return nil, fmt.Errorf("failed to create minio client. err: %w", err)
 	}
 
-	return &minioPkg{minioClient: minioClient}, nil
+	return &Storage{minioClient: minioClient}, nil
 }

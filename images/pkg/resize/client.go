@@ -1,8 +1,8 @@
 package resize
 
-type compressor struct {
+type Resizer struct {
 }
 
 func NewCompressor() Compressor {
-	return &compressor{}
+	return &Resizer{}
 }

@@ -3,18 +3,20 @@ package rabbitmq
 import "github.com/rabbitmq/amqp091-go"
 
 type RabbitMQ struct {
-	uri         string
-	uploadQueue string
+	Channel *amqp091.Channel
 }
 
-func New(uri string) *RabbitMQ {
-	return &RabbitMQ{uri: uri, uploadQueue: "upload"}
-}
+func New(rabbitMqURL string) (Queue, error) {
 
-func (mq *RabbitMQ) Connect() (*amqp091.Channel, error) {
-	conn, err := amqp091.Dial(mq.uri)
+	connection, err := amqp091.Dial(rabbitMqURL)
 	if err != nil {
 		return nil, err
 	}
-	return conn.Channel()
+
+	channel, err := connection.Channel()
+	if err != nil {
+		return nil, err
+	}
+
+	return &RabbitMQ{Channel: channel}, nil
 }
