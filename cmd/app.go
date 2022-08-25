@@ -6,7 +6,7 @@ import (
 	"images/internal/config"
 	"images/internal/service/image"
 	"images/internal/storage/image/minio"
-	"images/internal/transport/amqp/img"
+	"images/internal/transport/amqp/image"
 	"images/internal/transport/http/controllers/v1"
 	"images/pkg/minio"
 	"images/pkg/rabbitmq"

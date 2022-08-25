@@ -7,6 +7,7 @@ import (
 
 type appHandler = func(w http.ResponseWriter, r *http.Request) error
 
+// Middleware is error wrapper for api and returns status code with message
 func Middleware(h appHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

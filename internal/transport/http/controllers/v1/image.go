@@ -29,6 +29,13 @@ func (h *ImageHandler) Register(router *httprouter.Router) {
 	router.HandlerFunc(http.MethodGet, imageDownloadURL, apperror.Middleware(h.DownloadImage))
 }
 
+// UploadImage api endpoint to save image from client.
+// Use HTTP protocol.
+// REST.
+// Endpoint: /api/v1/image/upload .
+// Method: POST.
+// Queries: none, params: none.
+// Returns: id and confirmation message or errors.
 func (h *ImageHandler) UploadImage(w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", "form/json")
@@ -59,6 +66,13 @@ func (h *ImageHandler) UploadImage(w http.ResponseWriter, r *http.Request) error
 	})
 }
 
+// DownloadImage api endpoint to download image from server.
+// Use HTTP protocol.
+// REST.
+// Endpoint: /api/v1/image/download/:id .
+// Method: GET.
+// Queries: yes, params: yes.
+// Returns: file (image) in bytes to client.
 func (h *ImageHandler) DownloadImage(w http.ResponseWriter, r *http.Request) error {
 
 	params := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
