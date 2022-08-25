@@ -24,6 +24,8 @@ func (a *ImageAmqpHandler) Register() {
 	go a.Listen()
 }
 
+// Listen amqp queue
+// Queue name: "upload"
 func (a *ImageAmqpHandler) Listen() {
 
 	messageCh, err := a.Amqp.Listen("upload")
